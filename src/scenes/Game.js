@@ -2,20 +2,30 @@ import Phaser from "../lib/phaser.js";
 import Carrot from "../game/Carrot.js";
 
 export default class Game extends Phaser.Scene {
+  //carrotsCollected = 0;
+
+  /** @type {Phaser.GameObjects.Text} */
+  carrotsCollectedText;
+
   /**
    * @param {Phaser.GameObjects.Sprite} sprite
    */
   addCarrotAbove(sprite) {
     const y = sprite.y - sprite.displayHeight;
+
     // const y = sprite.y - sprite.displayHeight / 2 - 35 / 2;
     /** @type {Phaser.Physics.Arcade.Sprite} */
     const carrot = this.carrots.get(sprite.x, y, "carrot");
+
+    carrot.setActive(true);
+    carrot.setVisible(true);
 
     this.add.existing(carrot);
 
     carrot.body.setSize(carrot.width, carrot.height);
     // the other one is deprecated. use this: (i still see no difference though)
     //carrot.setBodySize(carrot.width, carrot.height);
+    this.physics.world.enable(carrot);
     return carrot;
   }
 
@@ -27,6 +37,10 @@ export default class Game extends Phaser.Scene {
   handleCollectCarrot(player, carrot) {
     this.carrots.killAndHide(carrot);
     this.physics.world.disableBody(carrot.body);
+    this.carrotsCollected++;
+
+    const value = `Carrots:${this.carrotsCollected}`;
+    this.carrotsCollectedText.text = value;
   }
 
   /** @type {Phaser.Physics.Arcade.Sprite} */
@@ -44,11 +58,17 @@ export default class Game extends Phaser.Scene {
     super("game");
   }
 
+  init() {
+    this.carrotsCollected = 0;
+  }
+
   preload() {
     this.load.image("background", "assets/bg_layer1.png");
     this.load.image("platform", "assets/ground_grass.png");
     this.load.image("bunny-stand", "assets/bunny1_stand.png");
+    this.load.image("bunny-jump", "assets/bunny1_jump.png");
     this.load.image("carrot", "assets/carrot.png");
+    this.load.audio("jump", "assets/sfx/phaseJump1.ogg");
     this.cursors = this.input.keyboard.createCursorKeys();
   }
   create() {
@@ -93,6 +113,30 @@ export default class Game extends Phaser.Scene {
       undefined,
       this
     );
+
+    const style = {
+      color: "#000",
+      fontSize: 24,
+      fontStyle: "900 italic",
+      //  backgroundColor: "red",
+      strokeThickness: 1,
+      stroke: "green",
+      padding: 10,
+      shadow: {
+        offsetX: 1,
+        offsetY: 1,
+        color: "green",
+        blur: 1,
+        fill: true,
+        stroke: true,
+      },
+    };
+    this.carrotsCollectedText = this.add
+      .text(240, 10, "Carrots:0", style)
+      .setScrollFactor(0)
+      .setOrigin(0.5, 0)
+      //z-index AKA setDepth
+      .setDepth(1);
   }
   update(t, dt) {
     this.platforms.children.iterate((child) => {
@@ -106,10 +150,17 @@ export default class Game extends Phaser.Scene {
         this.addCarrotAbove(platform);
       }
     });
+
     const touchingDown = this.player.body.touching.down;
 
     if (touchingDown) {
       this.player.setVelocityY(-300);
+      this.player.setTexture("bunny-jump");
+      this.sound.play("jump");
+    }
+    const vy = this.player.body.velocity.y;
+    if (vy > 0 && this.player.texture.key !== "bunny-stand") {
+      this.player.setTexture("bunny-stand");
     }
 
     if (this.cursors.left.isDown && !touchingDown) {
@@ -120,8 +171,12 @@ export default class Game extends Phaser.Scene {
       this.player.setVelocityX(0);
     }
     this.horizontalWrap(this.player);
-  }
 
+    const bottomPlatform = this.findBottomMostPlatform();
+
+    if (this.player.y > bottomPlatform.y + 200) this.scene.start("game-over");
+  }
+  //end of update
   /**
    * @param {Phaser.GameObjects.Sprite} sprite
    */
@@ -134,5 +189,20 @@ export default class Game extends Phaser.Scene {
     } else if (sprite.x > gameWidth + halfWidth) {
       sprite.x = -halfWidth;
     }
+  }
+
+  findBottomMostPlatform() {
+    const platforms = this.platforms.getChildren();
+    let bottomPlatform = platforms[0];
+
+    for (let i = 1; i < platforms.length; i++) {
+      const platform = platforms[i];
+
+      //discarding platforms that are above current
+
+      if (platform.y < bottomPlatform.y) continue;
+      bottomPlatform = platform;
+    }
+    return bottomPlatform;
   }
 }
