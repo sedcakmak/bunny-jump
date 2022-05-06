@@ -15,7 +15,7 @@ export default class Game extends Phaser.Scene {
 
     // const y = sprite.y - sprite.displayHeight / 2 - 35 / 2;
     /** @type {Phaser.Physics.Arcade.Sprite} */
-    const carrot = this.carrots.get(sprite.x, y, "carrot");
+    const carrot = this.carrots.get(sprite.x, y, "jumper", ["carrot.png"]);
 
     carrot.setActive(true);
     carrot.setVisible(true);
@@ -64,10 +64,11 @@ export default class Game extends Phaser.Scene {
 
   preload() {
     this.load.image("background", "assets/bg_layer1.png");
-    this.load.image("platform", "assets/ground_grass.png");
-    this.load.image("bunny-stand", "assets/bunny1_stand.png");
-    this.load.image("bunny-jump", "assets/bunny1_jump.png");
-    this.load.image("carrot", "assets/carrot.png");
+    this.load.atlasXML(
+      "jumper",
+      "assets/spritesheet_jumper.png",
+      "assets/spritesheet_jumper.xml"
+    );
     this.load.audio("jump", "assets/sfx/phaseJump1.ogg");
     this.cursors = this.input.keyboard.createCursorKeys();
   }
@@ -75,12 +76,18 @@ export default class Game extends Phaser.Scene {
     this.add.image(240, 320, "background").setScrollFactor(1, 0);
     this.platforms = this.physics.add.staticGroup();
 
+    // this.add.image(240, 320, "jumper", "carrot.png");
     for (let i = 0; i < 5; i++) {
       const x = Phaser.Math.Between(80, 400);
       const y = 150 * i;
 
       /** @type {Phaser.Physics.Arcade.Sprite} */
-      const platform = this.platforms.create(x, y, "platform");
+      const platform = this.platforms.create(
+        x,
+        y,
+        "jumper",
+        "ground_grass.png"
+      );
       platform.scale = 0.5;
 
       /** @type {Phaser.Physics.Arcade.StaticBody} */
@@ -89,7 +96,7 @@ export default class Game extends Phaser.Scene {
       body.updateFromGameObject();
     }
     this.player = this.physics.add
-      .sprite(240, 320, "bunny-stand")
+      .sprite(240, 320, "jumper", "bunny1_stand.png")
       .setScale(0.5);
 
     this.physics.add.collider(this.platforms, this.player);
@@ -118,7 +125,6 @@ export default class Game extends Phaser.Scene {
       color: "#000",
       fontSize: 24,
       fontStyle: "900 italic",
-      //  backgroundColor: "red",
       strokeThickness: 1,
       stroke: "green",
       padding: 10,
@@ -155,21 +161,24 @@ export default class Game extends Phaser.Scene {
 
     if (touchingDown) {
       this.player.setVelocityY(-300);
-      this.player.setTexture("bunny-jump");
+      this.player.setTexture("jumper", ["bunny1_jump.png"]);
       this.sound.play("jump");
     }
     const vy = this.player.body.velocity.y;
-    if (vy > 0 && this.player.texture.key !== "bunny-stand") {
-      this.player.setTexture("bunny-stand");
+    if (vy > 0 && this.player.texture.key !== ["bunny1_stand.png"]) {
+      this.player.setTexture("jumper", ["bunny1_stand.png"]);
     }
 
     if (this.cursors.left.isDown && !touchingDown) {
       this.player.setVelocityX(-200);
+      this.player.setTexture("jumper", ["bunny1_walk1.png"]).flipX = true;
     } else if (this.cursors.right.isDown && !touchingDown) {
       this.player.setVelocityX(200);
+      this.player.setTexture("jumper", ["bunny1_walk1.png"]).flipX = false;
     } else {
       this.player.setVelocityX(0);
     }
+
     this.horizontalWrap(this.player);
 
     const bottomPlatform = this.findBottomMostPlatform();
