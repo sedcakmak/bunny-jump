@@ -59,10 +59,12 @@ export default class Game extends Phaser.Scene {
   }
 
   init() {
+    console.log("Game.js init working");
     this.carrotsCollected = 0;
   }
 
   preload() {
+    console.log("Game.js preload working");
     this.load.image("background", "assets/bg_layer1.png");
     this.load.atlasXML(
       "jumper",
@@ -73,6 +75,8 @@ export default class Game extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
   }
   create() {
+    console.log("Game.js create working");
+    this.textures.remove("background-start");
     this.add.image(240, 320, "background").setScrollFactor(1, 0);
     this.platforms = this.physics.add.staticGroup();
 
