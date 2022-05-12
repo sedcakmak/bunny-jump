@@ -1,5 +1,6 @@
 import Phaser from "../lib/phaser.js";
 
+let bunny1, bunny2;
 export default class CharacterSelect extends Phaser.Scene {
   constructor() {
     super("character-select");
@@ -29,10 +30,26 @@ export default class CharacterSelect extends Phaser.Scene {
     console.log("Character Select working");
     this.add.image(140, 320, "background-start").scale = 0.5;
     this.input.keyboard.once("keydown-SPACE", this.handleContinue, this);
-    this.add.sprite(340, 430, "jumper", "bunny1_stand.png");
-    this.add.sprite(140, 430, "jumper", "bunny2_stand.png");
+    bunny1 = this.add.sprite(340, 430, "jumper", "bunny1_stand.png");
+    bunny2 = this.add.sprite(140, 430, "jumper", "bunny2_stand.png");
+    bunny2.setInteractive();
+    //bunny2.inputEnabled = true;
   }
   handleContinue() {
     this.scene.start("game", { character: this.selectedKey });
+  }
+
+  update() {
+    bunny2.on(
+      "pointerover",
+      function () {
+        console.log("hover");
+      },
+      this
+    );
+
+    bunny2.on("pointerout", function () {
+      console.log("out");
+    });
   }
 }
