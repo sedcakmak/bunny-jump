@@ -105,11 +105,11 @@ export default class Game extends Phaser.Scene {
     }
     if (this.selectedCharacter === "bunny1_stand.png") {
       this.player = this.physics.add
-        .sprite(240, 320, "jumper", "bunny2_stand.png")
+        .sprite(240, 320, "jumper", "bunny1_stand.png")
         .setScale(0.5);
     } else {
       this.player = this.physics.add
-        .sprite(240, 320, "jumper", "bunny1_stand.png")
+        .sprite(240, 320, "jumper", "bunny2_stand.png")
         .setScale(0.5);
     }
 
@@ -184,16 +184,28 @@ export default class Game extends Phaser.Scene {
       this.sound.play("jump");
     }
     const vy = this.player.body.velocity.y;
-    if (vy > 0 && this.player.texture.key !== ["bunny2_stand.png"]) {
-      this.player.setTexture("jumper", ["bunny2_stand.png"]);
+    if (this.selectedCharacter === "bunny1_stand.png") {
+      if (vy > 0 && this.player.texture.key !== ["bunny1_stand.png"]) {
+        this.player.setTexture("jumper", ["bunny1_stand.png"]);
+      }
+    } else if (this.selectedCharacter === "bunny2_stand.png") {
+      if (vy > 0 && this.player.texture.key !== ["bunny2_stand.png"]) {
+        this.player.setTexture("jumper", ["bunny2_stand.png"]);
+      }
     }
 
     if (this.cursors.left.isDown && !touchingDown) {
       this.player.setVelocityX(-200);
-      this.player.setTexture("jumper", ["bunny1_walk1.png"]).flipX = true;
+      this.selectedCharacter === "bunny1_stand.png"
+        ? (this.player.setTexture("jumper", ["bunny1_walk1.png"]).flipX = true)
+        : (this.player.setTexture("jumper", ["bunny2_walk1.png"]).flipX = true);
     } else if (this.cursors.right.isDown && !touchingDown) {
       this.player.setVelocityX(200);
-      this.player.setTexture("jumper", ["bunny1_walk1.png"]).flipX = false;
+      this.selectedCharacter === "bunny1_stand.png"
+        ? (this.player.setTexture("jumper", ["bunny1_walk1.png"]).flipX = false)
+        : (this.player.setTexture("jumper", [
+            "bunny2_walk1.png",
+          ]).flipX = false);
     } else {
       this.player.setVelocityX(0);
     }
