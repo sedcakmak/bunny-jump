@@ -1,6 +1,7 @@
 import Phaser from "../lib/phaser.js";
 
-let bunny1, bunny2;
+let bunny1, bunny2, bunny1_text, bunny2_text;
+
 export default class CharacterSelect extends Phaser.Scene {
   constructor() {
     super("character-select");
@@ -15,9 +16,7 @@ export default class CharacterSelect extends Phaser.Scene {
   }
 
   create() {
-    const width = this.scale.width;
-    const height = this.scale.height;
-
+    const self = this;
     this.add
       .text(240, 100, "Choose Your Bunny!", {
         fontSize: 42,
@@ -25,49 +24,78 @@ export default class CharacterSelect extends Phaser.Scene {
         color: "green",
       })
       .setOrigin(0.5);
+    bunny2_text = this.add
+      .text(240, 150, "Start with Purple Bunny!", {
+        fontSize: 26,
+        fontStyle: 900,
+        fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
+        color: "#BC71E0",
+      })
+      .setOrigin(0.5);
+    bunny2_text.setVisible(false);
+
+    bunny1_text = this.add
+      .text(240, 150, "Start with Brown Bunny!", {
+        fontSize: 26,
+        fontStyle: 900,
+        fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
+        color: "#B67B3F",
+      })
+      .setOrigin(0.5);
+    bunny1_text.setVisible(false);
     //.setDepth(1); //AKA z-index (so it'll be in front of the background clouds)
 
     this.add.image(140, 320, "background-start").scale = 0.5;
     this.input.keyboard.once("keydown-SPACE", this.handleContinue, this);
     bunny1 = this.add.sprite(340, 430, "jumper", "bunny1_stand.png");
     bunny2 = this.add.sprite(140, 430, "jumper", "bunny2_stand.png");
+    bunny1.alpha = 0.5;
+    bunny2.alpha = 0.5;
 
-    // console.log(this.textures.get("jumper").frames);
-    // bunny2.anims.add("testing", "bunny_stand.png", [0, 1]);
     bunny2.setInteractive();
-    // this.anims.create(
-    //   "wobble",
-
-    //   ["bunny2_hurt.png", "bunny2_jump.png", "bunny2_stand.png"],
-    //   24
-    // );
-    //
-    //bunny2.inputEnabled = true;
-
-    //this.anims.play("wobble");
-    // this.anims.play({ key: "dazzle", startFrame: 7 }, true);
-  }
-  handleContinue() {
-    this.scene.start("game", { character: this.selectedKey });
-  }
-
-  update() {
+    bunny1.setInteractive();
     bunny2.on(
       "pointerover",
       function () {
-        console.log("hover");
+        bunny2.alpha = 1;
+        bunny2_text.setVisible(true);
+        console.log(this);
       },
       this
     );
 
     bunny2.on("pointerout", function () {
-      console.log("out");
+      bunny2.alpha = 0.5;
+      bunny2_text.setVisible(false);
+      // bunny2_text.destroy();
+    });
+    bunny2.on("pointerdown", function () {
+      this.scene.scene.start("game", { character: this.frame.name });
     });
 
-    // if (bunny2.pointerOver()) {
-    //   bunny2.alpha = 1;
-    // } else {
-    //   bunny2.alpha = 0.5;
-    // }
+    bunny1.on(
+      "pointerover",
+      function () {
+        bunny1.alpha = 1;
+        bunny1_text.setVisible(true);
+        console.log(this);
+      },
+      this
+    );
+
+    bunny1.on("pointerout", function () {
+      bunny1.alpha = 0.5;
+      bunny1_text.setVisible(false);
+      // bunny2_text.destroy();
+    });
+    bunny1.on("pointerdown", function () {
+      this.scene.scene.start("game", { character: this.frame.name });
+    });
+    //bunny2.inputEnabled = true;
   }
+  handleContinue() {
+    this.scene.start("game", { character: this.selectedKey });
+  }
+
+  update() {}
 }

@@ -58,9 +58,12 @@ export default class Game extends Phaser.Scene {
     super("game");
   }
 
-  init() {
+  init(data) {
     console.log("Game.js init working");
     this.carrotsCollected = 0;
+    this.selectedCharacter = data.character;
+    console.log("data is " + data);
+    console.log("Data.character is: " + this.selectedCharacter);
   }
 
   preload() {
@@ -76,6 +79,7 @@ export default class Game extends Phaser.Scene {
   }
   create() {
     console.log("Game.js create working");
+
     this.textures.remove("background-start");
     this.add.image(240, 320, "background").setScrollFactor(1, 0);
     this.platforms = this.physics.add.staticGroup();
@@ -99,9 +103,15 @@ export default class Game extends Phaser.Scene {
       const body = platform.body;
       body.updateFromGameObject();
     }
-    this.player = this.physics.add
-      .sprite(240, 320, "jumper", "bunny1_stand.png")
-      .setScale(0.5);
+    if (this.selectedCharacter === "bunny1_stand.png") {
+      this.player = this.physics.add
+        .sprite(240, 320, "jumper", "bunny2_stand.png")
+        .setScale(0.5);
+    } else {
+      this.player = this.physics.add
+        .sprite(240, 320, "jumper", "bunny1_stand.png")
+        .setScale(0.5);
+    }
 
     this.physics.add.collider(this.platforms, this.player);
 
@@ -165,12 +175,17 @@ export default class Game extends Phaser.Scene {
 
     if (touchingDown) {
       this.player.setVelocityY(-300);
-      this.player.setTexture("jumper", ["bunny1_jump.png"]);
+      if (this.selectedCharacter === "bunny1_stand.png") {
+        this.player.setTexture("jumper", ["bunny1_jump.png"]);
+      } else {
+        this.player.setTexture("jumper", ["bunny2_jump.png"]);
+      }
+
       this.sound.play("jump");
     }
     const vy = this.player.body.velocity.y;
-    if (vy > 0 && this.player.texture.key !== ["bunny1_stand.png"]) {
-      this.player.setTexture("jumper", ["bunny1_stand.png"]);
+    if (vy > 0 && this.player.texture.key !== ["bunny2_stand.png"]) {
+      this.player.setTexture("jumper", ["bunny2_stand.png"]);
     }
 
     if (this.cursors.left.isDown && !touchingDown) {
