@@ -59,15 +59,11 @@ export default class Game extends Phaser.Scene {
   }
 
   init(data) {
-    console.log("Game.js init working");
     this.carrotsCollected = 0;
     this.selectedCharacter = data.character;
-    console.log("data is " + data);
-    console.log("Data.character is: " + this.selectedCharacter);
   }
 
   preload() {
-    console.log("Game.js preload working");
     this.load.image("background", "assets/bg_layer1.png");
     this.load.atlasXML(
       "jumper",
@@ -76,10 +72,9 @@ export default class Game extends Phaser.Scene {
     );
     this.load.audio("jump", "assets/sfx/phaseJump1.ogg");
     this.cursors = this.input.keyboard.createCursorKeys();
+    console.log(this.input);
   }
   create() {
-    console.log("Game.js create working");
-
     this.textures.remove("background-start");
     this.add.image(240, 320, "background").setScrollFactor(1, 0);
     this.platforms = this.physics.add.staticGroup();
@@ -211,10 +206,14 @@ export default class Game extends Phaser.Scene {
     }
 
     this.horizontalWrap(this.player);
-
+    // this.player.angle += 0.5; (rotates the sprite)
     const bottomPlatform = this.findBottomMostPlatform();
-
-    if (this.player.y > bottomPlatform.y + 200) this.scene.start("game-over");
+    if (this.player.y > bottomPlatform.y + 50) {
+      this.selectedCharacter === "bunny1_stand.png"
+        ? this.player.setTexture("jumper", ["bunny1_hurt.png"])
+        : this.player.setTexture("jumper", ["bunny2_hurt.png"]);
+    }
+    if (this.player.y > bottomPlatform.y + 400) this.scene.start("game-over");
   }
   //end of update
   /**

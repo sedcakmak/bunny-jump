@@ -16,7 +16,6 @@ export default class CharacterSelect extends Phaser.Scene {
   }
 
   create() {
-    const self = this;
     this.add
       .text(240, 100, "Choose Your Bunny!", {
         fontSize: 42,
@@ -46,11 +45,12 @@ export default class CharacterSelect extends Phaser.Scene {
     //.setDepth(1); //AKA z-index (so it'll be in front of the background clouds)
 
     this.add.image(140, 320, "background-start").scale = 0.5;
-    this.input.keyboard.once("keydown-SPACE", this.handleContinue, this);
+    //this.input.keyboard.once("keydown-SPACE", this.handleContinue, this);
     bunny1 = this.add.sprite(340, 430, "jumper", "bunny1_stand.png");
     bunny2 = this.add.sprite(140, 430, "jumper", "bunny2_stand.png");
     bunny1.alpha = 0.5;
     bunny2.alpha = 0.5;
+    //bunny2.inputEnabled = true;
 
     bunny2.setInteractive();
     bunny1.setInteractive();
@@ -59,7 +59,6 @@ export default class CharacterSelect extends Phaser.Scene {
       function () {
         bunny2.alpha = 1;
         bunny2_text.setVisible(true);
-        console.log(this);
       },
       this
     );
@@ -78,7 +77,6 @@ export default class CharacterSelect extends Phaser.Scene {
       function () {
         bunny1.alpha = 1;
         bunny1_text.setVisible(true);
-        console.log(this);
       },
       this
     );
@@ -86,16 +84,14 @@ export default class CharacterSelect extends Phaser.Scene {
     bunny1.on("pointerout", function () {
       bunny1.alpha = 0.5;
       bunny1_text.setVisible(false);
-      // bunny2_text.destroy();
     });
     bunny1.on("pointerdown", function () {
       this.scene.scene.start("game", { character: this.frame.name });
     });
-    //bunny2.inputEnabled = true;
   }
-  handleContinue() {
-    this.scene.start("game", { character: this.selectedKey });
-  }
+  // handleContinue() {
+  //   this.scene.start("game", { character: this.selectedKey });
+  // }
 
   update() {}
 }

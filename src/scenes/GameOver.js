@@ -16,7 +16,17 @@ export default class GameOver extends Phaser.Scene {
 
     this.input.keyboard.once("keydown-SPACE", () => {
       //this.scene.start("game");
+
       this.scene.start("character-select");
+    });
+
+    // this.input.mouse("onMouseDown", () => {
+    //   console.log("mousedown working");
+    //   console.log(this.input);
+    // });
+
+    this.input.once("mousedownwindow", () => {
+      console.log(this.input);
     });
   }
 }
