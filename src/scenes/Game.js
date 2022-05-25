@@ -72,7 +72,6 @@ export default class Game extends Phaser.Scene {
     );
     this.load.audio("jump", "assets/sfx/phaseJump1.ogg");
     this.cursors = this.input.keyboard.createCursorKeys();
-    console.log(this.input);
   }
   create() {
     this.textures.remove("background-start");

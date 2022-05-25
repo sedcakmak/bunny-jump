@@ -1,4 +1,5 @@
 import Phaser from "../lib/phaser.js";
+import TweenHelper from "../lib/TweenHelper.js";
 
 export default class GameOver extends Phaser.Scene {
   constructor() {
@@ -20,23 +21,18 @@ export default class GameOver extends Phaser.Scene {
         align: "center",
         wordWrap: { width: 440, useAdvancedWrap: true },
       })
-      .setOrigin(0.5);
-    newGameText.setVisible(false);
+      .setOrigin(0.5)
+      .setAlpha(0);
 
     function onEvent() {
-      newGameText.setVisible(true);
+      TweenHelper.flashElement(this, newGameText);
     }
 
-    this.time.delayedCall(1500, onEvent, [], this);
+    this.time.delayedCall(1000, onEvent, [], this);
 
     this.input.keyboard.once("keydown-SPACE", () => {
       this.scene.start("character-select");
     });
-
-    // this.input.mouse("onMouseDown", () => {
-    //   console.log("mousedown working");
-    //   console.log(this.input);
-    // });
 
     this.input.once("mousedownwindow", () => {
       console.log(this.input);

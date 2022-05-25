@@ -23,6 +23,7 @@ export default class CharacterSelect extends Phaser.Scene {
         color: "green",
       })
       .setOrigin(0.5);
+
     bunny2_text = this.add
       .text(240, 150, "Start with Purple Bunny!", {
         fontSize: 26,
