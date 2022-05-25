@@ -7,16 +7,29 @@ export default class GameOver extends Phaser.Scene {
   create() {
     const width = this.scale.width;
     const height = this.scale.height;
-
     this.add
-      .text(width * 0.5, height * 0.5, "Game Over", {
+      .text(width * 0.5, height * 0.3, "Game Over", {
         fontSize: 48,
+        fontStyle: 600,
       })
       .setOrigin(0.5);
 
-    this.input.keyboard.once("keydown-SPACE", () => {
-      //this.scene.start("game");
+    const newGameText = this.add
+      .text(width * 0.5, height * 0.5, "Press Space Key To Start A New Game", {
+        fontSize: 38.5,
+        align: "center",
+        wordWrap: { width: 440, useAdvancedWrap: true },
+      })
+      .setOrigin(0.5);
+    newGameText.setVisible(false);
 
+    function onEvent() {
+      newGameText.setVisible(true);
+    }
+
+    this.time.delayedCall(1500, onEvent, [], this);
+
+    this.input.keyboard.once("keydown-SPACE", () => {
       this.scene.start("character-select");
     });
 
