@@ -16,7 +16,7 @@ export default class GameOver extends Phaser.Scene {
       .setOrigin(0.5);
 
     const newGameText = this.add
-      .text(width * 0.5, height * 0.5, "Press Space To Start A New Game", {
+      .text(width * 0.5, height * 0.5, "Press Space Key To Start A New Game", {
         fontSize: 38.5,
         align: "center",
         wordWrap: { width: 440, useAdvancedWrap: true },
