@@ -1,6 +1,8 @@
 import Phaser from "../lib/phaser.js";
 import Carrot from "../game/Carrot.js";
+import Flame from "../game/Flame.js";
 
+let sfx;
 export default class Game extends Phaser.Scene {
   //carrotsCollected = 0;
 
@@ -10,6 +12,21 @@ export default class Game extends Phaser.Scene {
   /**
    * @param {Phaser.GameObjects.Sprite} sprite
    */
+
+  addFlameAbove(sprite) {
+    const y = sprite.y - sprite.displayHeight;
+    /** @type {Phaser.Physics.Arcade.Sprite} */
+    const flame = this.flames.get(sprite.x, y, "jumper", ["flame.png"]);
+
+    flame.setActive(true);
+    flame.setVisible(true);
+
+    this.add.existing(flame);
+
+    flame.body.setSize(flame.width, flame.height);
+    this.physics.world.enable(flame);
+    return flame;
+  }
   addCarrotAbove(sprite) {
     const y = sprite.y - sprite.displayHeight;
 
@@ -33,12 +50,32 @@ export default class Game extends Phaser.Scene {
    * @param {Phaser.Physics.Arcade.Sprite} player
    * @param {Carrot} carrot
    */
+  /**
+   * @param {Phaser.Physics.Arcade.Sprite} player
+   * @param {Flame} flame
+   */
 
+  flameHit(player, flame) {
+    // this.flames.killAndHide(flame);
+    this.physics.world.disableBody(player.body);
+    this.physics.world.disableBody(flame.body);
+    console.log(flame);
+    this.sound.play("dead");
+    this.bunnyHurtImage();
+    this.time.delayedCall(600, this.gameOver, [], this);
+  }
+
+  bunnyHurtImage() {
+    this.selectedCharacter === "bunny1_stand.png"
+      ? this.player.setTexture("jumper", ["bunny1_hurt.png"])
+      : this.player.setTexture("jumper", ["bunny2_hurt.png"]);
+  }
   handleCollectCarrot(player, carrot) {
     this.carrots.killAndHide(carrot);
     this.physics.world.disableBody(carrot.body);
     this.carrotsCollected++;
-
+    sfx.stop("jump");
+    this.sound.play("collect-carrots");
     const value = `Carrots:${this.carrotsCollected}`;
     this.carrotsCollectedText.text = value;
   }
@@ -51,6 +88,8 @@ export default class Game extends Phaser.Scene {
 
   /** @type {Phaser.Physics.Arcade.Group} */
   carrots;
+  /** @type {Phaser.Physics.Arcade.Group} */
+  flames;
 
   /** @type {Phaser.Types.Input.Keyboard.CursorKeys} */
   cursors;
@@ -71,12 +110,15 @@ export default class Game extends Phaser.Scene {
       "assets/spritesheet_jumper.xml"
     );
     this.load.audio("jump", "assets/sfx/phaseJump1.ogg");
+    this.load.audio("dead", "assets/sfx/phaserDown3.ogg");
+    this.load.audio("collect-carrots", "assets/sfx/twoTone1.ogg");
     this.cursors = this.input.keyboard.createCursorKeys();
   }
   create() {
     this.textures.remove("background-start");
     this.add.image(240, 320, "background").setScrollFactor(1, 0);
     this.platforms = this.physics.add.staticGroup();
+    sfx = this.sound.add("jump");
 
     // this.add.image(240, 320, "jumper", "carrot.png");
     for (let i = 0; i < 5; i++) {
@@ -119,12 +161,24 @@ export default class Game extends Phaser.Scene {
     this.carrots = this.physics.add.group({
       classType: Carrot,
     });
+    this.flames = this.physics.add.group({
+      classType: Flame,
+    });
     this.physics.add.collider(this.platforms, this.carrots);
+    this.physics.add.collider(this.player, this.flames);
 
     this.physics.add.overlap(
       this.player,
       this.carrots,
       this.handleCollectCarrot,
+      undefined,
+      this
+    );
+
+    this.physics.add.overlap(
+      this.player,
+      this.flames,
+      this.flameHit,
       undefined,
       this
     );
@@ -162,6 +216,7 @@ export default class Game extends Phaser.Scene {
         platform.y = scrollY - Phaser.Math.Between(50, 100);
         platform.body.updateFromGameObject();
         this.addCarrotAbove(platform);
+        this.addFlameAbove(platform);
       }
     });
 
@@ -175,7 +230,7 @@ export default class Game extends Phaser.Scene {
         this.player.setTexture("jumper", ["bunny2_jump.png"]);
       }
 
-      this.sound.play("jump");
+      sfx.play();
     }
     const vy = this.player.body.velocity.y;
     if (this.selectedCharacter === "bunny1_stand.png") {
@@ -208,11 +263,12 @@ export default class Game extends Phaser.Scene {
     // this.player.angle += 0.5; (rotates the sprite)
     const bottomPlatform = this.findBottomMostPlatform();
     if (this.player.y > bottomPlatform.y + 50) {
-      this.selectedCharacter === "bunny1_stand.png"
-        ? this.player.setTexture("jumper", ["bunny1_hurt.png"])
-        : this.player.setTexture("jumper", ["bunny2_hurt.png"]);
+      this.bunnyHurtImage();
     }
-    if (this.player.y > bottomPlatform.y + 400) this.scene.start("game-over");
+
+    if (this.player.y > bottomPlatform.y + 400) {
+      this.gameOver();
+    }
   }
   //end of update
   /**
@@ -242,5 +298,9 @@ export default class Game extends Phaser.Scene {
       bottomPlatform = platform;
     }
     return bottomPlatform;
+  }
+
+  gameOver() {
+    this.scene.start("game-over");
   }
 }
