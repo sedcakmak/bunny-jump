@@ -2,7 +2,8 @@ import Phaser from "../lib/phaser.js";
 import Carrot from "../game/Carrot.js";
 import Flame from "../game/Flame.js";
 
-let sfx;
+let sfx, platformCollider, playerIsDead;
+
 export default class Game extends Phaser.Scene {
   //carrotsCollected = 0;
 
@@ -56,13 +57,19 @@ export default class Game extends Phaser.Scene {
    */
 
   flameHit(player, flame) {
-    // this.flames.killAndHide(flame);
-    this.physics.world.disableBody(player.body);
+    playerIsDead = true;
+    this.flames.killAndHide(flame);
+
     this.physics.world.disableBody(flame.body);
-    console.log(flame);
-    this.sound.play("dead");
+    // this.physics.world.disableBody(player.body);
     this.bunnyHurtImage();
-    this.time.delayedCall(600, this.gameOver, [], this);
+    // this.physics.world.colliders.destroy();
+    this.physics.world.removeCollider(platformCollider);
+    this.player.setVelocityY(300);
+    this.input.keyboard.enabled = false;
+    this.sound.play("dead");
+
+    this.time.delayedCall(1000, this.gameOver, [], this);
   }
 
   bunnyHurtImage() {
@@ -100,6 +107,7 @@ export default class Game extends Phaser.Scene {
   init(data) {
     this.carrotsCollected = 0;
     this.selectedCharacter = data.character;
+    this.input.keyboard.enabled = true;
   }
 
   preload() {
@@ -139,6 +147,7 @@ export default class Game extends Phaser.Scene {
       const body = platform.body;
       body.updateFromGameObject();
     }
+
     if (this.selectedCharacter === "bunny1_stand.png") {
       this.player = this.physics.add
         .sprite(240, 320, "jumper", "bunny1_stand.png")
@@ -149,7 +158,7 @@ export default class Game extends Phaser.Scene {
         .setScale(0.5);
     }
 
-    this.physics.add.collider(this.platforms, this.player);
+    platformCollider = this.physics.add.collider(this.platforms, this.player);
 
     this.player.body.checkCollision.up = false;
     this.player.body.checkCollision.left = false;
@@ -229,17 +238,18 @@ export default class Game extends Phaser.Scene {
       } else {
         this.player.setTexture("jumper", ["bunny2_jump.png"]);
       }
-
       sfx.play();
     }
     const vy = this.player.body.velocity.y;
-    if (this.selectedCharacter === "bunny1_stand.png") {
-      if (vy > 0 && this.player.texture.key !== ["bunny1_stand.png"]) {
-        this.player.setTexture("jumper", ["bunny1_stand.png"]);
-      }
-    } else if (this.selectedCharacter === "bunny2_stand.png") {
-      if (vy > 0 && this.player.texture.key !== ["bunny2_stand.png"]) {
-        this.player.setTexture("jumper", ["bunny2_stand.png"]);
+    if (!playerIsDead) {
+      if (this.selectedCharacter === "bunny1_stand.png") {
+        if (vy > 0 && this.player.texture.key !== ["bunny1_stand.png"]) {
+          this.player.setTexture("jumper", ["bunny1_stand.png"]);
+        }
+      } else if (this.selectedCharacter === "bunny2_stand.png") {
+        if (vy > 0 && this.player.texture.key !== ["bunny2_stand.png"]) {
+          this.player.setTexture("jumper", ["bunny2_stand.png"]);
+        }
       }
     }
 
