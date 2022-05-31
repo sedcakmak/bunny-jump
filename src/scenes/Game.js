@@ -2,7 +2,7 @@ import Phaser from "../lib/phaser.js";
 import Carrot from "../game/Carrot.js";
 import Flame from "../game/Flame.js";
 
-let sfx, platformCollider, playerIsDead;
+let sfx, platformCollider, playerIsHit, life;
 
 export default class Game extends Phaser.Scene {
   //carrotsCollected = 0;
@@ -57,7 +57,7 @@ export default class Game extends Phaser.Scene {
    */
 
   flameHit(player, flame) {
-    playerIsDead = true;
+    playerIsHit = true;
     this.flames.killAndHide(flame);
 
     this.physics.world.disableBody(flame.body);
@@ -79,11 +79,12 @@ export default class Game extends Phaser.Scene {
   }
   handleCollectCarrot(player, carrot) {
     this.carrots.killAndHide(carrot);
+
     this.physics.world.disableBody(carrot.body);
     this.carrotsCollected++;
     sfx.stop("jump");
     this.sound.play("collect-carrots");
-    const value = `Carrots:${this.carrotsCollected}`;
+    const value = `${this.carrotsCollected}`;
     this.carrotsCollectedText.text = value;
   }
 
@@ -106,6 +107,7 @@ export default class Game extends Phaser.Scene {
 
   init(data) {
     this.carrotsCollected = 0;
+    if (!life) life = 3;
     this.selectedCharacter = data.character;
     this.input.keyboard.enabled = true;
   }
@@ -120,19 +122,19 @@ export default class Game extends Phaser.Scene {
     this.load.audio("jump", "assets/sfx/phaseJump1.ogg");
     this.load.audio("dead", "assets/sfx/phaserDown3.ogg");
     this.load.audio("collect-carrots", "assets/sfx/twoTone1.ogg");
+    this.load.audio("game-over", "assets/sfx/game-over.ogg");
     this.cursors = this.input.keyboard.createCursorKeys();
   }
   create() {
-    this.textures.remove("background-start");
+    if (this.textures.exists("background-start"))
+      this.textures.remove("background-start");
     this.add.image(240, 320, "background").setScrollFactor(1, 0);
     this.platforms = this.physics.add.staticGroup();
     sfx = this.sound.add("jump");
 
-    // this.add.image(240, 320, "jumper", "carrot.png");
     for (let i = 0; i < 5; i++) {
       const x = Phaser.Math.Between(80, 400);
       const y = 150 * i;
-
       /** @type {Phaser.Physics.Arcade.Sprite} */
       const platform = this.platforms.create(
         x,
@@ -173,6 +175,7 @@ export default class Game extends Phaser.Scene {
     this.flames = this.physics.add.group({
       classType: Flame,
     });
+
     this.physics.add.collider(this.platforms, this.carrots);
     this.physics.add.collider(this.player, this.flames);
 
@@ -194,11 +197,11 @@ export default class Game extends Phaser.Scene {
 
     const style = {
       color: "#000",
-      fontSize: 24,
+      fontSize: 18,
       fontStyle: "900 italic",
       strokeThickness: 1,
-      stroke: "green",
-      padding: 10,
+      stroke: "black",
+      padding: 4,
       shadow: {
         offsetX: 1,
         offsetY: 1,
@@ -208,10 +211,17 @@ export default class Game extends Phaser.Scene {
         stroke: true,
       },
     };
-    this.carrotsCollectedText = this.add
-      .text(240, 10, "Carrots:0", style)
+    this.add
+      .sprite(10, 10, "jumper", "carrots.png")
+      .setScale(1, 1)
       .setScrollFactor(0)
-      .setOrigin(0.5, 0)
+      .setOrigin(0, 0)
+      .setDepth(1);
+
+    this.carrotsCollectedText = this.add
+      .text(33, 28, "0", style)
+      .setScrollFactor(0)
+      .setOrigin(0, 0)
       //z-index AKA setDepth
       .setDepth(1);
   }
@@ -222,7 +232,8 @@ export default class Game extends Phaser.Scene {
 
       const scrollY = this.cameras.main.scrollY;
       if (platform.y >= scrollY + 700) {
-        platform.y = scrollY - Phaser.Math.Between(50, 100);
+        let testing = Phaser.Math.Between(50, 100);
+        platform.y = scrollY - testing;
         platform.body.updateFromGameObject();
         this.addCarrotAbove(platform);
         this.addFlameAbove(platform);
@@ -241,7 +252,7 @@ export default class Game extends Phaser.Scene {
       sfx.play();
     }
     const vy = this.player.body.velocity.y;
-    if (!playerIsDead) {
+    if (!playerIsHit) {
       if (this.selectedCharacter === "bunny1_stand.png") {
         if (vy > 0 && this.player.texture.key !== ["bunny1_stand.png"]) {
           this.player.setTexture("jumper", ["bunny1_stand.png"]);
@@ -277,8 +288,10 @@ export default class Game extends Phaser.Scene {
     }
 
     if (this.player.y > bottomPlatform.y + 400) {
+      this.sound.play("dead");
       this.gameOver();
     }
+    this.remainingLife(life);
   }
   //end of update
   /**
@@ -307,10 +320,27 @@ export default class Game extends Phaser.Scene {
       if (platform.y < bottomPlatform.y) continue;
       bottomPlatform = platform;
     }
+
     return bottomPlatform;
   }
 
   gameOver() {
-    this.scene.start("game-over");
+    life === 1
+      ? this.scene.start("game-over") && this.sound.play("game-over")
+      : this.scene.start("game");
+    life--;
+    playerIsHit = false;
+  }
+
+  remainingLife(life) {
+    let lives = this.add.group();
+    for (var i = 0; i < life; i++) {
+      lives
+        .create(440 - i * 35, 10, "jumper", "lifes.png")
+        .setScale(0.6, 0.6)
+        .setScrollFactor(0)
+        .setOrigin(0, 0)
+        .setDepth(1);
+    }
   }
 }
