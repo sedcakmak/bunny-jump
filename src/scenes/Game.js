@@ -1,8 +1,9 @@
 import Phaser from "../lib/phaser.js";
 import Carrot from "../game/Carrot.js";
 import Flame from "../game/Flame.js";
+import Sun from "../game/Sun.js";
 
-let sfx, platformCollider, playerIsHit, life;
+let sfx, platformCollider, playerIsHit, life, levelIsCompleted, iteration;
 
 export default class Game extends Phaser.Scene {
   //carrotsCollected = 0;
@@ -44,7 +45,28 @@ export default class Game extends Phaser.Scene {
     // the other one is deprecated. use this: (i still see no difference though)
     //carrot.setBodySize(carrot.width, carrot.height);
     this.physics.world.enable(carrot);
+
     return carrot;
+  }
+
+  addSpring(xx, yy) {
+    let spring = this.physics.add
+      .sprite(xx, yy, "jumper", "spring_in.png")
+      .setScale(0.5);
+    this.physics.add.collider(this.platforms, spring);
+    this.physics.add.collider(this.player, spring);
+
+    this.physics.add.overlap(
+      this.player,
+      this.spring,
+      this.testing,
+      undefined,
+      this
+    );
+
+    const body = spring.body;
+    console.log(body);
+    body.updateFromGameObject();
   }
 
   /**
@@ -229,14 +251,18 @@ export default class Game extends Phaser.Scene {
     this.platforms.children.iterate((child) => {
       /** @type {Phaser.Physics.Arcade.Sprite} */
       const platform = child;
-
       const scrollY = this.cameras.main.scrollY;
-      if (platform.y >= scrollY + 700) {
-        let testing = Phaser.Math.Between(50, 100);
-        platform.y = scrollY - testing;
-        platform.body.updateFromGameObject();
-        this.addCarrotAbove(platform);
-        this.addFlameAbove(platform);
+      if (!levelIsCompleted) {
+        if (platform.y >= scrollY + 700) {
+          platform.y = scrollY - Phaser.Math.Between(50, 100);
+          platform.body.updateFromGameObject();
+          this.addCarrotAbove(platform);
+          this.addFlameAbove(platform);
+        }
+      } else {
+        const topPlatform = this.findTopMostPlatform();
+        this.addSpring(topPlatform.x, topPlatform.y);
+        this.endCurrentLevel();
       }
     });
 
@@ -292,6 +318,8 @@ export default class Game extends Phaser.Scene {
       this.gameOver();
     }
     this.remainingLife(life);
+
+    if (this.carrotsCollected >= 2) levelIsCompleted = true;
   }
   //end of update
   /**
@@ -323,6 +351,19 @@ export default class Game extends Phaser.Scene {
 
     return bottomPlatform;
   }
+  findTopMostPlatform() {
+    const platforms = this.platforms.getChildren();
+    let topPlatform = platforms[4];
+
+    for (let i = 1; i < platforms.length; i++) {
+      const platform = platforms[i];
+
+      //discarding platforms that are below current
+
+      if (platform.y < topPlatform.y) continue;
+    }
+    return topPlatform;
+  }
 
   gameOver() {
     life === 1
@@ -342,5 +383,9 @@ export default class Game extends Phaser.Scene {
         .setOrigin(0, 0)
         .setDepth(1);
     }
+  }
+
+  endCurrentLevel() {
+    console.log("endCurrentLEvel is working");
   }
 }
