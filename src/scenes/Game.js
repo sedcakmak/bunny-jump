@@ -3,7 +3,14 @@ import Carrot from "../game/Carrot.js";
 import Flame from "../game/Flame.js";
 import Sun from "../game/Sun.js";
 
-let sfx, platformCollider, playerIsHit, life, levelIsCompleted, iteration;
+let sfx,
+  platformCollider,
+  playerIsHit,
+  life,
+  levelIsCompleted,
+  topPlatform,
+  X,
+  Y;
 
 export default class Game extends Phaser.Scene {
   //carrotsCollected = 0;
@@ -31,6 +38,7 @@ export default class Game extends Phaser.Scene {
   }
   addCarrotAbove(sprite) {
     const y = sprite.y - sprite.displayHeight;
+    //  console.log("display height: " + sprite.displayHeight);
 
     // const y = sprite.y - sprite.displayHeight / 2 - 35 / 2;
     /** @type {Phaser.Physics.Arcade.Sprite} */
@@ -52,7 +60,8 @@ export default class Game extends Phaser.Scene {
   addSpring(xx, yy) {
     let spring = this.physics.add
       .sprite(xx, yy, "jumper", "spring_in.png")
-      .setScale(0.5);
+      .setScale(0.5)
+      .setOrigin(0.5);
     this.physics.add.collider(this.platforms, spring);
     this.physics.add.collider(this.player, spring);
 
@@ -65,10 +74,18 @@ export default class Game extends Phaser.Scene {
     );
 
     const body = spring.body;
-    console.log(body);
     body.updateFromGameObject();
   }
 
+  sunMoving() {
+    if (
+      (this.sun.body.velocity.x > 0 &&
+        this.sun.x > this.scale.width - this.sun.width / 4) ||
+      (this.sun.body.velocity.x < 0 && this.sun.x < this.sun.width / 4)
+    ) {
+      this.sun.body.velocity.x *= -1;
+    }
+  }
   /**
    * @param {Phaser.Physics.Arcade.Sprite} player
    * @param {Carrot} carrot
@@ -76,6 +93,10 @@ export default class Game extends Phaser.Scene {
   /**
    * @param {Phaser.Physics.Arcade.Sprite} player
    * @param {Flame} flame
+   */
+  /**
+   * @param {Phaser.Physics.Arcade.Sprite} player
+   * @param {Flame} sun
    */
 
   flameHit(player, flame) {
@@ -112,6 +133,8 @@ export default class Game extends Phaser.Scene {
 
   /** @type {Phaser.Physics.Arcade.Sprite} */
   player;
+  /** @type {Phaser.Physics.Arcade.Sprite} */
+  sun;
 
   /** @type {Phaser.Physics.Arcade.StaticGroup} */
   platforms;
@@ -172,6 +195,12 @@ export default class Game extends Phaser.Scene {
       body.updateFromGameObject();
     }
 
+    this.sun = this.physics.add
+      .sprite(240, 320, "jumper", "sun1.png")
+      .setScale(0.5);
+    this.sun.setGravityY(-200);
+    this.sun.setVelocityX(200);
+
     if (this.selectedCharacter === "bunny1_stand.png") {
       this.player = this.physics.add
         .sprite(240, 320, "jumper", "bunny1_stand.png")
@@ -197,9 +226,13 @@ export default class Game extends Phaser.Scene {
     this.flames = this.physics.add.group({
       classType: Flame,
     });
+    // this.sun = this.physics.add({
+    //   classType: Sun,
+    // });
 
     this.physics.add.collider(this.platforms, this.carrots);
     this.physics.add.collider(this.player, this.flames);
+    //  this.physics.add.collider(this.player, this.sun);
 
     this.physics.add.overlap(
       this.player,
@@ -253,6 +286,7 @@ export default class Game extends Phaser.Scene {
       const platform = child;
       const scrollY = this.cameras.main.scrollY;
       if (!levelIsCompleted) {
+        this.sunMoving();
         if (platform.y >= scrollY + 700) {
           platform.y = scrollY - Phaser.Math.Between(50, 100);
           platform.body.updateFromGameObject();
@@ -260,9 +294,11 @@ export default class Game extends Phaser.Scene {
           this.addFlameAbove(platform);
         }
       } else {
-        const topPlatform = this.findTopMostPlatform();
-        this.addSpring(topPlatform.x, topPlatform.y);
-        this.endCurrentLevel();
+        // console.log(this.platforms);
+        this.findTopMostPlatform();
+        this.addSpring(X, Y);
+        this.addSun();
+        //  this.endCurrentLevel();
       }
     });
 
@@ -353,16 +389,15 @@ export default class Game extends Phaser.Scene {
   }
   findTopMostPlatform() {
     const platforms = this.platforms.getChildren();
-    let topPlatform = platforms[4];
 
-    for (let i = 1; i < platforms.length; i++) {
+    for (let i = 0; i < platforms.length; i++) {
       const platform = platforms[i];
-
-      //discarding platforms that are below current
-
-      if (platform.y < topPlatform.y) continue;
+      console.log(
+        "function icindekiii: " + i + " " + platform.y + " " + platform.x
+      );
+      X = platforms[4].x;
+      Y = platforms[4].y - platform.displayHeight;
     }
-    return topPlatform;
   }
 
   gameOver() {
@@ -386,6 +421,6 @@ export default class Game extends Phaser.Scene {
   }
 
   endCurrentLevel() {
-    console.log("endCurrentLEvel is working");
+    //  console.log("endCurrentLEvel is working");
   }
 }
