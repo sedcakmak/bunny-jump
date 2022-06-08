@@ -107,8 +107,8 @@
 	<SubTexture name="springMan_stand.png" x="801" y="609" width="110" height="141"/>
 	<SubTexture name="spring_in.png" x="0" y="1988" width="145" height="57"/>
 	<SubTexture name="spring_out.png" x="434" y="1265" width="145" height="110"/>
-	<SubTexture name="sun1.png" x="534" y="913" width="142" height="148"/>
-	<SubTexture name="sun2.png" x="421" y="1390" width="148" height="142"/>
+	<SubTexture name="sun0" x="534" y="913" width="142" height="148"/>
+	<SubTexture name="sun1" x="421" y="1390" width="148" height="142"/>
 	<SubTexture name="wingMan1.png" x="382" y="635" width="174" height="126"/>
 	<SubTexture name="wingMan2.png" x="0" y="1879" width="206" height="107"/>
 	<SubTexture name="wingMan3.png" x="0" y="1559" width="216" height="101"/>

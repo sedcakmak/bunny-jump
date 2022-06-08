@@ -10,7 +10,8 @@ let sfx,
   levelIsCompleted,
   topPlatform,
   X,
-  Y;
+  Y,
+  anim;
 
 export default class Game extends Phaser.Scene {
   //carrotsCollected = 0;
@@ -195,11 +196,44 @@ export default class Game extends Phaser.Scene {
       body.updateFromGameObject();
     }
 
-    this.sun = this.physics.add
-      .sprite(240, 320, "jumper", "sun1.png")
-      .setScale(0.5);
+    // console.log(this.anims);
+    // this.add.image(240, 320, "jumper", "sun0.png");
+    // this.add.image(240, 320, "jumper", "sun1.png");
+    /*** @param {key} */
+
+    this.anims.create({
+      key: "roaming",
+      frames: this.anims.generateFrameNames("jumper", {
+        prefix: "sun",
+        end: 2,
+      }),
+      frameRate: 8,
+      repeat: -1,
+    });
+
+    this.sun = this.physics.add.sprite(240, 320).play("roaming").setScale(0.5);
     this.sun.setGravityY(-200);
     this.sun.setVelocityX(200);
+    // console.log(this.textures.list.jumper.frames);
+    // this.anims.play("roaming");
+    console.log(this.anims);
+    // this.add.sprite(240, 320).setScale(2.7).play("roaming");
+
+    // this.sun.anims.add({
+    //   key: "roam",
+    //   frames: this.anims.generateFrameNumbers({
+    //     prefix: "sun",
+    //     start: 10,
+    //     end: 11,
+    //     zeroPad: 4,
+    //   }),
+    //   repeat: -1,
+    // });
+
+    //  this.sun.play("roam", true);
+    //  console.log(this.anims.generateFrameNumbers("jumper"));
+
+    //this.sun.enableBody = true;
 
     if (this.selectedCharacter === "bunny1_stand.png") {
       this.player = this.physics.add
