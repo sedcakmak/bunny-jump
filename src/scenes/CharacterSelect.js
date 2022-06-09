@@ -31,8 +31,8 @@ export default class CharacterSelect extends Phaser.Scene {
         fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
         color: "#BC71E0",
       })
-      .setOrigin(0.5);
-    bunny2_text.setVisible(false);
+      .setOrigin(0.5)
+      .setVisible(false);
 
     bunny1_text = this.add
       .text(240, 150, "Start with Brown Bunny!", {
@@ -41,9 +41,8 @@ export default class CharacterSelect extends Phaser.Scene {
         fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
         color: "#B67B3F",
       })
-      .setOrigin(0.5);
-    bunny1_text.setVisible(false);
-    //.setDepth(1); //AKA z-index (so it'll be in front of the background clouds)
+      .setOrigin(0.5)
+      .setVisible(false);
 
     this.add.image(140, 320, "background-start").scale = 0.5;
     //this.input.keyboard.once("keydown-SPACE", this.handleContinue, this);
@@ -55,6 +54,7 @@ export default class CharacterSelect extends Phaser.Scene {
 
     bunny2.setInteractive();
     bunny1.setInteractive();
+
     bunny2.on(
       "pointerover",
       function () {

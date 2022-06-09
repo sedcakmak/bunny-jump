@@ -10,8 +10,7 @@ let sfx,
   levelIsCompleted,
   topPlatform,
   X,
-  Y,
-  anim;
+  Y;
 
 export default class Game extends Phaser.Scene {
   //carrotsCollected = 0;
@@ -115,6 +114,22 @@ export default class Game extends Phaser.Scene {
 
     this.time.delayedCall(1000, this.gameOver, [], this);
   }
+  sunHit(player, sun) {
+    console.log("sunHit working");
+    playerIsHit = true;
+    // this.sun.killAndHide(sun);
+    // this.physics.world.disableBody(player.body);
+
+    this.physics.world.disableBody(sun.body);
+    this.bunnyHurtImage();
+    // this.physics.world.colliders.destroy();
+    //this.physics.world.removeCollider(platformCollider);
+    this.player.setVelocityY(300);
+    this.input.keyboard.enabled = false;
+    this.sound.play("dead");
+
+    this.time.delayedCall(1000, this.gameOver, [], this);
+  }
 
   bunnyHurtImage() {
     this.selectedCharacter === "bunny1_stand.png"
@@ -196,43 +211,23 @@ export default class Game extends Phaser.Scene {
       body.updateFromGameObject();
     }
 
-    // console.log(this.anims);
-    // this.add.image(240, 320, "jumper", "sun0.png");
-    // this.add.image(240, 320, "jumper", "sun1.png");
-    /*** @param {key} */
-
     this.anims.create({
       key: "roaming",
       frames: this.anims.generateFrameNames("jumper", {
         prefix: "sun",
-        end: 2,
+        end: 1,
       }),
       frameRate: 8,
       repeat: -1,
     });
 
-    this.sun = this.physics.add.sprite(240, 320).play("roaming").setScale(0.5);
-    this.sun.setGravityY(-200);
-    this.sun.setVelocityX(200);
+    this.sun = this.physics.add
+      .sprite(40, 320)
+      .play("roaming")
+      .setScale(0.5)
+      .setGravityY(-200)
+      .setVelocityX(200);
     // console.log(this.textures.list.jumper.frames);
-    // this.anims.play("roaming");
-    console.log(this.anims);
-    // this.add.sprite(240, 320).setScale(2.7).play("roaming");
-
-    // this.sun.anims.add({
-    //   key: "roam",
-    //   frames: this.anims.generateFrameNumbers({
-    //     prefix: "sun",
-    //     start: 10,
-    //     end: 11,
-    //     zeroPad: 4,
-    //   }),
-    //   repeat: -1,
-    // });
-
-    //  this.sun.play("roam", true);
-    //  console.log(this.anims.generateFrameNumbers("jumper"));
-
     //this.sun.enableBody = true;
 
     if (this.selectedCharacter === "bunny1_stand.png") {
@@ -251,6 +246,10 @@ export default class Game extends Phaser.Scene {
     this.player.body.checkCollision.left = false;
     this.player.body.checkCollision.right = false;
 
+    this.sun.body.checkCollision.up = true;
+    this.sun.body.checkCollision.left = true;
+    this.sun.body.checkCollision.right = true;
+
     this.cameras.main.startFollow(this.player);
     this.cameras.main.setDeadzone(this.scale.width * 1.5);
 
@@ -260,13 +259,10 @@ export default class Game extends Phaser.Scene {
     this.flames = this.physics.add.group({
       classType: Flame,
     });
-    // this.sun = this.physics.add({
-    //   classType: Sun,
-    // });
 
     this.physics.add.collider(this.platforms, this.carrots);
     this.physics.add.collider(this.player, this.flames);
-    //  this.physics.add.collider(this.player, this.sun);
+    this.physics.add.collider(this.player, this.sun);
 
     this.physics.add.overlap(
       this.player,
@@ -280,6 +276,13 @@ export default class Game extends Phaser.Scene {
       this.player,
       this.flames,
       this.flameHit,
+      undefined,
+      this
+    );
+    this.physics.add.overlap(
+      this.player,
+      this.sun,
+      this.sunHit,
       undefined,
       this
     );
@@ -328,10 +331,8 @@ export default class Game extends Phaser.Scene {
           this.addFlameAbove(platform);
         }
       } else {
-        // console.log(this.platforms);
         this.findTopMostPlatform();
         this.addSpring(X, Y);
-        this.addSun();
         //  this.endCurrentLevel();
       }
     });
