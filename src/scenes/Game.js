@@ -115,7 +115,7 @@ export default class Game extends Phaser.Scene {
     this.time.delayedCall(1000, this.gameOver, [], this);
   }
   sunHit(player, sun) {
-    console.log("sunHit working");
+    console.log("sunHit");
     playerIsHit = true;
     // this.sun.killAndHide(sun);
     // this.physics.world.disableBody(player.body);
