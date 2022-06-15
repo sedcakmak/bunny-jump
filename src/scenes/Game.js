@@ -96,7 +96,7 @@ export default class Game extends Phaser.Scene {
    */
   /**
    * @param {Phaser.Physics.Arcade.Sprite} player
-   * @param {Flame} sun
+   * @param {Sun} sun
    */
 
   flameHit(player, flame) {
@@ -119,15 +119,13 @@ export default class Game extends Phaser.Scene {
     playerIsHit = true;
     // this.sun.killAndHide(sun);
     // this.physics.world.disableBody(player.body);
-
     this.physics.world.disableBody(sun.body);
     this.bunnyHurtImage();
     // this.physics.world.colliders.destroy();
-    //this.physics.world.removeCollider(platformCollider);
+    this.physics.world.removeCollider(platformCollider);
     this.player.setVelocityY(300);
     this.input.keyboard.enabled = false;
     this.sound.play("dead");
-
     this.time.delayedCall(1000, this.gameOver, [], this);
   }
 
@@ -226,7 +224,8 @@ export default class Game extends Phaser.Scene {
       .play("roaming")
       .setScale(0.5)
       .setGravityY(-200)
-      .setVelocityX(200);
+      .setVelocityX(200)
+      .setBounce(0);
     // console.log(this.textures.list.jumper.frames);
     //this.sun.enableBody = true;
 
@@ -241,12 +240,12 @@ export default class Game extends Phaser.Scene {
     }
 
     platformCollider = this.physics.add.collider(this.platforms, this.player);
-
     this.player.body.checkCollision.up = false;
     this.player.body.checkCollision.left = false;
     this.player.body.checkCollision.right = false;
 
     this.sun.body.checkCollision.up = true;
+    this.sun.body.checkCollision.down = true;
     this.sun.body.checkCollision.left = true;
     this.sun.body.checkCollision.right = true;
 
@@ -262,7 +261,13 @@ export default class Game extends Phaser.Scene {
 
     this.physics.add.collider(this.platforms, this.carrots);
     this.physics.add.collider(this.player, this.flames);
-    this.physics.add.collider(this.player, this.sun);
+    this.physics.add.collider(
+      this.player,
+      this.sun,
+      this.sunHit,
+      undefined,
+      this
+    );
 
     this.physics.add.overlap(
       this.player,
@@ -279,13 +284,13 @@ export default class Game extends Phaser.Scene {
       undefined,
       this
     );
-    this.physics.add.overlap(
-      this.player,
-      this.sun,
-      this.sunHit,
-      undefined,
-      this
-    );
+    // this.physics.add.overlap(
+    //   this.sun,
+    //   this.player,
+    //   this.sunHit,
+    //   undefined,
+    //   this
+    // );
 
     const style = {
       color: "#000",
@@ -337,7 +342,8 @@ export default class Game extends Phaser.Scene {
       }
     });
 
-    const touchingDown = this.player.body.touching.down;
+    //const touchingDown = this.player.body.touching.down;
+    const touchingDown = this.player.body.onFloor();
 
     if (touchingDown) {
       this.player.setVelocityY(-300);
