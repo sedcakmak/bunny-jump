@@ -225,7 +225,8 @@ export default class Game extends Phaser.Scene {
       .setScale(0.5)
       .setGravityY(-200)
       .setVelocityX(200)
-      .setBounce(0);
+      .setCircle(30);
+
     // console.log(this.textures.list.jumper.frames);
     //this.sun.enableBody = true;
 
