@@ -57,11 +57,13 @@ export default class Game extends Phaser.Scene {
     return carrot;
   }
 
-  addSpring(xx, yy) {
-    let spring = this.physics.add
-      .sprite(xx, yy, "jumper", "spring_in.png")
-      .setScale(0.5)
-      .setOrigin(0.5);
+  addSpring(X, Y) {
+    console.log("adding");
+    let springx = this.physics.add.StaticGroup();
+    let spring = springx.create(X, Y, "jumper", "spring_in.png");
+
+    spring.setScale(0.5);
+    spring.setOrigin(0.5);
     this.physics.add.collider(this.platforms, spring);
     this.physics.add.collider(this.player, spring);
 
@@ -73,8 +75,7 @@ export default class Game extends Phaser.Scene {
       this
     );
 
-    const body = spring.body;
-    body.updateFromGameObject();
+    spring.body.updateFromGameObject();
   }
 
   sunMoving() {
@@ -188,8 +189,9 @@ export default class Game extends Phaser.Scene {
     if (this.textures.exists("background-start"))
       this.textures.remove("background-start");
     this.add.image(240, 320, "background").setScrollFactor(1, 0);
-    this.platforms = this.physics.add.staticGroup();
     sfx = this.sound.add("jump");
+    this.platforms = this.physics.add.staticGroup();
+    // this.spring = this.physics.add.StaticBody();
 
     for (let i = 0; i < 5; i++) {
       const x = Phaser.Math.Between(80, 400);
@@ -207,6 +209,8 @@ export default class Game extends Phaser.Scene {
 
       const body = platform.body;
       body.updateFromGameObject();
+
+      //   this.spring.c
     }
 
     this.anims.create({
@@ -337,9 +341,7 @@ export default class Game extends Phaser.Scene {
           this.addFlameAbove(platform);
         }
       } else {
-        this.findTopMostPlatform();
-        this.addSpring(X, Y);
-        //  this.endCurrentLevel();
+        this.endCurrentLevel();
       }
     });
 
@@ -430,16 +432,12 @@ export default class Game extends Phaser.Scene {
     return bottomPlatform;
   }
   findTopMostPlatform() {
-    const platforms = this.platforms.getChildren();
+    const platformy = this.platforms.getChildren();
+    X = platformy[0].x;
+    Y = platformy[0].y - platformy[0].displayHeight;
+    return X, Y;
 
-    for (let i = 0; i < platforms.length; i++) {
-      const platform = platforms[i];
-      console.log(
-        "function icindekiii: " + i + " " + platform.y + " " + platform.x
-      );
-      X = platforms[4].x;
-      Y = platforms[4].y - platform.displayHeight;
-    }
+    // }
   }
 
   gameOver() {
@@ -463,6 +461,7 @@ export default class Game extends Phaser.Scene {
   }
 
   endCurrentLevel() {
-    //  console.log("endCurrentLEvel is working");
+    this.findTopMostPlatform();
+    this.addSpring(X, Y);
   }
 }
