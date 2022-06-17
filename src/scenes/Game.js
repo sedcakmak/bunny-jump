@@ -47,6 +47,20 @@ export default class Game extends Phaser.Scene {
     return carrot;
   }
 
+  addSpring(sprite) {
+    const y = sprite.y - sprite.displayHeight + 10;
+    console.log(sprite.displayHeight);
+
+    /** @type {Phaser.Physics.Arcade.Sprite} */
+    const spring = this.springs.get(sprite.x, y, "jumper", ["spring_in.png"]);
+    spring.setActive(true);
+    spring.setVisible(false);
+    this.add.existing(spring);
+    spring.setBodySize(spring.width, spring.height);
+    spring.body.allowGravity = false;
+    this.physics.world.enable(spring);
+    return spring;
+  }
   sunMoving() {
     if (
       (this.sun.body.velocity.x > 0 &&
@@ -72,18 +86,6 @@ export default class Game extends Phaser.Scene {
    * @param {Phaser.Physics.Arcade.Sprite} player
    * @param {Spring} spring
    */
-
-  addSpring(X, Y) {
-    console.log("adding");
-    /** @type {Phaser.Physics.Arcade.Sprite} */
-    let spring = this.spring.create(X, Y, "jumper", ["spring_in.png"]);
-    spring.setActive(true);
-    spring.setVisible(true);
-    this.add.existing(spring, true);
-    spring.body.setSize(spring.width, spring.height);
-    this.physics.world.enable(spring);
-    return spring;
-  }
 
   flameHit(player, flame) {
     playerIsHit = true;
@@ -247,7 +249,7 @@ export default class Game extends Phaser.Scene {
     this.flames = this.physics.add.group({
       classType: Flame,
     });
-    this.spring = this.physics.add.group({
+    this.springs = this.physics.add.group({
       classType: Spring,
     });
     this.physics.add.collider(this.platforms, this.carrots);
@@ -329,6 +331,7 @@ export default class Game extends Phaser.Scene {
           platform.body.updateFromGameObject();
           this.addCarrotAbove(platform);
           this.addFlameAbove(platform);
+          this.addSpring(platform);
         }
       } else {
         this.endCurrentLevel();
@@ -389,7 +392,7 @@ export default class Game extends Phaser.Scene {
     }
     this.remainingLife(life);
 
-    if (this.carrotsCollected >= 2) levelIsCompleted = true;
+    if (this.carrotsCollected >= 10) levelIsCompleted = true;
 
     if (levelIsCompleted) {
       this.findTopMostPlatform();
@@ -430,8 +433,19 @@ export default class Game extends Phaser.Scene {
     X = platformy[0].x;
     Y = platformy[0].y - platformy[0].displayHeight;
     // return X, Y;
-    this.addSpring(X, Y);
+    this.findSpring(X, Y);
     // }
+  }
+
+  findSpring(X, Y) {
+    const springs = this.springs.getChildren();
+
+    for (let i = 1; i < springs.length; i++) {
+      const spring = springs[i];
+      if (spring.x === X) {
+        spring.setVisible(true);
+      }
+    }
   }
 
   gameOver() {
@@ -455,6 +469,6 @@ export default class Game extends Phaser.Scene {
   }
 
   endCurrentLevel() {
-    console.log("endCurrentLevel working");
+    // console.log("endCurrentLevel working");
   }
 }
