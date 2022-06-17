@@ -2,19 +2,11 @@ import Phaser from "../lib/phaser.js";
 import Carrot from "../game/Carrot.js";
 import Flame from "../game/Flame.js";
 import Sun from "../game/Sun.js";
+import Spring from "../game/Spring.js";
 
-let sfx,
-  platformCollider,
-  playerIsHit,
-  life,
-  levelIsCompleted,
-  topPlatform,
-  X,
-  Y;
+let sfx, platformCollider, playerIsHit, life, levelIsCompleted, X, Y;
 
 export default class Game extends Phaser.Scene {
-  //carrotsCollected = 0;
-
   /** @type {Phaser.GameObjects.Text} */
   carrotsCollectedText;
 
@@ -38,9 +30,7 @@ export default class Game extends Phaser.Scene {
   }
   addCarrotAbove(sprite) {
     const y = sprite.y - sprite.displayHeight;
-    //  console.log("display height: " + sprite.displayHeight);
 
-    // const y = sprite.y - sprite.displayHeight / 2 - 35 / 2;
     /** @type {Phaser.Physics.Arcade.Sprite} */
     const carrot = this.carrots.get(sprite.x, y, "jumper", ["carrot.png"]);
 
@@ -55,27 +45,6 @@ export default class Game extends Phaser.Scene {
     this.physics.world.enable(carrot);
 
     return carrot;
-  }
-
-  addSpring(X, Y) {
-    console.log("adding");
-    let springx = this.physics.add.StaticGroup();
-    let spring = springx.create(X, Y, "jumper", "spring_in.png");
-
-    spring.setScale(0.5);
-    spring.setOrigin(0.5);
-    this.physics.add.collider(this.platforms, spring);
-    this.physics.add.collider(this.player, spring);
-
-    this.physics.add.overlap(
-      this.player,
-      this.spring,
-      this.testing,
-      undefined,
-      this
-    );
-
-    spring.body.updateFromGameObject();
   }
 
   sunMoving() {
@@ -99,6 +68,22 @@ export default class Game extends Phaser.Scene {
    * @param {Phaser.Physics.Arcade.Sprite} player
    * @param {Sun} sun
    */
+  /**
+   * @param {Phaser.Physics.Arcade.Sprite} player
+   * @param {Spring} spring
+   */
+
+  addSpring(X, Y) {
+    console.log("adding");
+    /** @type {Phaser.Physics.Arcade.Sprite} */
+    let spring = this.spring.create(X, Y, "jumper", ["spring_in.png"]);
+    spring.setActive(true);
+    spring.setVisible(true);
+    this.add.existing(spring, true);
+    spring.body.setSize(spring.width, spring.height);
+    this.physics.world.enable(spring);
+    return spring;
+  }
 
   flameHit(player, flame) {
     playerIsHit = true;
@@ -153,6 +138,8 @@ export default class Game extends Phaser.Scene {
 
   /** @type {Phaser.Physics.Arcade.StaticGroup} */
   platforms;
+  /** @type {Phaser.Physics.Arcade.StaticBody} */
+  spring;
 
   /** @type {Phaser.Physics.Arcade.Group} */
   carrots;
@@ -191,7 +178,6 @@ export default class Game extends Phaser.Scene {
     this.add.image(240, 320, "background").setScrollFactor(1, 0);
     sfx = this.sound.add("jump");
     this.platforms = this.physics.add.staticGroup();
-    // this.spring = this.physics.add.StaticBody();
 
     for (let i = 0; i < 5; i++) {
       const x = Phaser.Math.Between(80, 400);
@@ -209,8 +195,6 @@ export default class Game extends Phaser.Scene {
 
       const body = platform.body;
       body.updateFromGameObject();
-
-      //   this.spring.c
     }
 
     this.anims.create({
@@ -227,9 +211,9 @@ export default class Game extends Phaser.Scene {
       .sprite(40, 320)
       .play("roaming")
       .setScale(0.5)
-      .setGravityY(-200)
       .setVelocityX(200)
       .setCircle(30);
+    this.sun.body.allowGravity = false;
 
     // console.log(this.textures.list.jumper.frames);
     //this.sun.enableBody = true;
@@ -263,7 +247,9 @@ export default class Game extends Phaser.Scene {
     this.flames = this.physics.add.group({
       classType: Flame,
     });
-
+    this.spring = this.physics.add.group({
+      classType: Spring,
+    });
     this.physics.add.collider(this.platforms, this.carrots);
     this.physics.add.collider(this.player, this.flames);
     this.physics.add.collider(
@@ -289,13 +275,17 @@ export default class Game extends Phaser.Scene {
       undefined,
       this
     );
-    // this.physics.add.overlap(
-    //   this.sun,
-    //   this.player,
-    //   this.sunHit,
-    //   undefined,
-    //   this
-    // );
+
+    this.physics.add.collider(this.platforms, this.spring);
+    this.physics.add.collider(this.player, this.spring);
+
+    this.physics.add.overlap(
+      this.player,
+      this.spring,
+      this.testing,
+      undefined,
+      this
+    );
 
     const style = {
       color: "#000",
@@ -400,6 +390,10 @@ export default class Game extends Phaser.Scene {
     this.remainingLife(life);
 
     if (this.carrotsCollected >= 2) levelIsCompleted = true;
+
+    if (levelIsCompleted) {
+      this.findTopMostPlatform();
+    }
   }
   //end of update
   /**
@@ -435,8 +429,8 @@ export default class Game extends Phaser.Scene {
     const platformy = this.platforms.getChildren();
     X = platformy[0].x;
     Y = platformy[0].y - platformy[0].displayHeight;
-    return X, Y;
-
+    // return X, Y;
+    this.addSpring(X, Y);
     // }
   }
 
@@ -461,7 +455,6 @@ export default class Game extends Phaser.Scene {
   }
 
   endCurrentLevel() {
-    this.findTopMostPlatform();
-    this.addSpring(X, Y);
+    console.log("endCurrentLevel working");
   }
 }
